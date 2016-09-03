@@ -16,46 +16,60 @@ defmodule FileSmasherSevenTest do
     :ok
   end
 
+  def assert_size(curr, nfo) do
+    assert curr["files"] == nfo["files"]
+    assert curr["o_bytes"] == nfo["o_bytes"]
+    assert curr["arch_bytes"] == nfo["arch_bytes"]
+  end
+
   test "compress folder with 7z min" do
     path = System.cwd <> "/test/documents"
-    o1 = SevenZip.compress(path, {:'7z', :min}) |> IO.inspect
-    o2 = SevenZip.info(System.cwd <> "/test/documents.7z") |> IO.inspect
-    assert o2["files"] == 3
-    assert o2["type"] == "7z"
-    assert o2["solid"] == false
-    assert o1["o_bytes"] == o2["o_bytes"]
-    assert o1["arch_bytes"] == o2["arch_bytes"]
+    arch = path <> ".7z"
+    o1 = SevenZip.compress(arch, path, {:'7z', :min}) |> IO.inspect
+    nfo = SevenZip.info(arch) |> IO.inspect
+    assert nfo["files"] == 3
+    assert nfo["type"] == "7z"
+    assert nfo["solid"] == false
+    assert_size(o1, nfo)
+    o2 = SevenZip.extract(arch, path) |> IO.inspect
+    assert_size(o2, nfo)
   end
 
   test "compress folder with 7z ultra" do
     path = System.cwd <> "/test/documents"
-    o1 = SevenZip.compress(path, {:'7z', :ultra}) |> IO.inspect
-    o2 = SevenZip.info(System.cwd <> "/test/documents.7z") |> IO.inspect
-    assert o2["files"] == 3
-    assert o2["type"] == "7z"
-    assert o2["solid"] == true
-    assert o1["o_bytes"] == o2["o_bytes"]
-    assert o1["arch_bytes"] == o2["arch_bytes"]
+    arch = path <> ".7z"
+    o1 = SevenZip.compress(arch, path, {:'7z', :ultra}) |> IO.inspect
+    nfo = SevenZip.info(arch) |> IO.inspect
+    assert nfo["files"] == 3
+    assert nfo["type"] == "7z"
+    assert nfo["solid"] == true
+    assert_size(o1, nfo)
+    o2 = SevenZip.extract(arch, path) |> IO.inspect
+    assert_size(o2, nfo)
   end
 
   test "compress folder with zip min" do
     path = System.cwd <> "/test/documents"
-    o1 = SevenZip.compress(path, {:zip, :min}) |> IO.inspect
-    o2 = SevenZip.info(System.cwd <> "/test/documents.zip") |> IO.inspect
-    assert o2["type"] == "zip"
-    assert o2["files"] == 3
-    assert o1["o_bytes"] == o2["o_bytes"]
-    assert o1["arch_bytes"] == o2["arch_bytes"]
+    arch = path <> ".zip"
+    o1 = SevenZip.compress(arch, path, {:zip, :min}) |> IO.inspect
+    nfo = SevenZip.info(arch) |> IO.inspect
+    assert nfo["files"] == 3
+    assert nfo["type"] == "zip"
+    assert_size(o1, nfo)
+    o2 = SevenZip.extract(arch, path, :true) |> IO.inspect
+    assert_size(o2, nfo)
   end
 
   test "compress folder with zip ultra" do
     path = System.cwd <> "/test/documents"
-    o1 = SevenZip.compress(path, {:zip, :ultra}) |> IO.inspect
-    o2 = SevenZip.info(System.cwd <> "/test/documents.zip") |> IO.inspect
-    assert o2["type"] == "zip"
-    assert o2["files"] == 3
-    assert o1["o_bytes"] == o2["o_bytes"]
-    assert o1["arch_bytes"] == o2["arch_bytes"]
+    arch = path <> ".zip"
+    o1 = SevenZip.compress(arch, path, {:zip, :ultra}) |> IO.inspect
+    nfo = SevenZip.info(arch) |> IO.inspect
+    assert nfo["files"] == 3
+    assert nfo["type"] == "zip"
+    assert_size(o1, nfo)
+    o2 = SevenZip.extract(arch, path, :true) |> IO.inspect
+    assert_size(o2, nfo)
   end
 
 end

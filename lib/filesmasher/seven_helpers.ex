@@ -22,11 +22,15 @@ defmodule FileSmasher.SevenZip.Helpers do
   end
 
   @doc false
-  def match_common_output(match) do
+  def fix_common_match(match) do
     match = Map.update! match, "files", &(elem(Integer.parse(&1), 0))
     match = Map.update! match, "o_bytes", &(elem(Integer.parse(&1), 0))
     match = Map.update! match, "arch_bytes", &(elem(Integer.parse(&1), 0))
-    Map.put match, "ratio", Float.round(match["arch_bytes"] / match["o_bytes"], 3)
+    if match["o_bytes"] > 0 do
+      Map.put match, "ratio", Float.round(match["arch_bytes"] / match["o_bytes"], 3)
+    else
+      Map.put match, "ratio", 0
+    end
   end
 
   @doc false
@@ -38,7 +42,7 @@ defmodule FileSmasher.SevenZip.Helpers do
       (?<o_bytes>\d+)\s+\d+\s+
       (?<files>\d+)[ ]files?
       /xms, output)
-    match_common_output(match)
+    fix_common_match(match)
   end
 
   @doc false

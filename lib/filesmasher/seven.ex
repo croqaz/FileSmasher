@@ -32,7 +32,7 @@ defmodule FileSmasher.SevenZip do
       (?<o_bytes>\d+)[ ]bytes[ ]\((?<o_size>.+?)\)$.+
       ^Archive[ ]size:[ ](?<arch_bytes>\d+)[ ]bytes[ ]\((?<arch_size>.+)\)$
       /xms, output)
-    match_common_output(match)
+    fix_common_match(match)
   end
 
   @doc """
@@ -43,25 +43,38 @@ defmodule FileSmasher.SevenZip do
     - {:'7z'} - normal 7Z, the default option
     - {:zip} - normal ZIP compression
   """
-  @spec compress(charlist, tuple) :: none
-  def compress(path, options \\ {:'7z'}) do
+  @spec compress(String.t, String.t, tuple, list) :: map
+  def compress(arch, path, method \\ {:'7z'}, args \\ []) do
+    arch = Path.expand(arch)
     path = Path.expand(path)
-    ext = elem(options, 0) |> to_string
-    outz = Path.rootname(path) <> "." <> ext
-    IO.puts(~s(Compress "#{path}" into "#{outz}".))
+    IO.puts(~s(Compress "#{path}" into "#{arch}".))
     # Execute 7z add
-    { output, _ } = System.cmd("7z", ["a"] ++ compress_args(options) ++ [outz, path])
+    { output, _ } = System.cmd("7z", ["a"] ++ compress_args(method) ++ args ++ [arch, path])
     parse_add_output(output)
+  end
+
+  @doc false
+  def parse_extract_output(output) do
+    match = Regex.named_captures(~r/
+      ^Files:\s+(?<files>\d+)$.+
+      ^Size:\s+(?<o_bytes>\d+)$.+
+      ^Compressed:\s+(?<arch_bytes>\d+)$
+      /xms, output)
+    fix_common_match(match)
   end
 
   @doc """
   Extract archive into a path.
   """
-  # @spec extract(charlist) :: none
-  # def extract(archive) do
-  #   archive = Path.expand(archive)
-  #   IO.puts(~s(Will extract "#{archive}".))
-  #   nil
-  # end
+  @spec extract(String.t, String.t, boolean) :: map
+  def extract(arch, path, overwrite \\ false) do
+    arch = Path.expand(arch)
+    path = "-o" <> Path.expand(path)
+    args = if overwrite, do: ["-y"], else: ["-aos"]
+    IO.puts(~s(Extracting "#{arch}".))
+    # Execute 7z extract
+    { output, _ } = System.cmd("7z", ["e"] ++ args ++ [arch, path])
+    parse_extract_output(output)
+  end
 
 end
