@@ -18,8 +18,8 @@ defmodule FileSmasherSevenTest do
 
   def assert_size(curr, nfo) do
     assert curr["files"] == nfo["files"]
-    assert curr["o_bytes"] == nfo["o_bytes"]
-    assert curr["arch_bytes"] == nfo["arch_bytes"]
+    assert curr["orig_size"] == nfo["orig_size"]
+    assert curr["arch_size"] == nfo["arch_size"]
   end
 
   test "compress folder with 7z min" do
@@ -31,8 +31,7 @@ defmodule FileSmasherSevenTest do
     assert nfo["type"] == "7z"
     assert nfo["solid"] == false
     assert_size(o1, nfo)
-    o2 = SevenZip.extract(arch, path) |> IO.inspect
-    assert_size(o2, nfo)
+    :ok = SevenZip.extract(arch, path)
   end
 
   test "compress folder with 7z ultra" do
@@ -44,8 +43,7 @@ defmodule FileSmasherSevenTest do
     assert nfo["type"] == "7z"
     assert nfo["solid"] == true
     assert_size(o1, nfo)
-    o2 = SevenZip.extract(arch, path) |> IO.inspect
-    assert_size(o2, nfo)
+    :ok = SevenZip.extract(arch, path)
   end
 
   test "compress folder with zip min" do
@@ -56,8 +54,7 @@ defmodule FileSmasherSevenTest do
     assert nfo["files"] == 3
     assert nfo["type"] == "zip"
     assert_size(o1, nfo)
-    o2 = SevenZip.extract(arch, path, :true) |> IO.inspect
-    assert_size(o2, nfo)
+    :ok = SevenZip.extract(arch, path)
   end
 
   test "compress folder with zip ultra" do
@@ -68,8 +65,27 @@ defmodule FileSmasherSevenTest do
     assert nfo["files"] == 3
     assert nfo["type"] == "zip"
     assert_size(o1, nfo)
-    o2 = SevenZip.extract(arch, path, :true) |> IO.inspect
-    assert_size(o2, nfo)
+    :ok = SevenZip.extract(arch, path)
+  end
+
+  test "listing invalid archive should fail" do
+    arch = System.cwd <> "/test/documents.xyz"
+    %{error: e} = SevenZip.info(arch)
+    assert is_binary(e) == true
+  end
+
+  test "extract invalid archive should fail" do
+    path = System.cwd <> "/test/documents"
+    arch = path <> ".xyz"
+    %{error: e} = SevenZip.extract(arch, path)
+    assert is_binary(e) == true
+  end
+
+  test "extract in invalid path should fail" do
+    path = "/"
+    arch = System.cwd <> "/test/documents.zip"
+    %{error: e} = SevenZip.extract(arch, path)
+    assert is_binary(e) == true
   end
 
 end

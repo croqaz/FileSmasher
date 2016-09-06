@@ -4,6 +4,50 @@ defmodule FileSmasher.SevenZip.Helpers do
   """
 
   @doc false
+  def fix_common_match(match) do
+    match = Map.update! match, "files", &(elem(Integer.parse(&1), 0))
+    match = Map.update! match, "orig_size", &(elem(Integer.parse(&1), 0))
+    match = Map.update! match, "arch_size", &(elem(Integer.parse(&1), 0))
+    if match["orig_size"] > 0 do
+      Map.put match, "ratio", Float.round(match["arch_size"] / match["orig_size"], 3)
+    else
+      Map.put match, "ratio", 0
+    end
+  end
+
+  @doc false
+  def parse_list_output_7z(output) do
+    match = Regex.named_captures(~r/
+      ^Method[ ]=[ ](?<method>\S+)$.+
+      ^Solid[ ]=[ ](?<solid>[-+])$
+      /xms, output)
+    match = Map.update! match, "solid", &(&1 == "+")
+    match_zip = parse_list_output_zip(output)
+    Map.merge(match_zip, match)
+  end
+
+  @doc false
+  def parse_list_output_zip(output) do
+    match = Regex.named_captures(~r/
+      ^Type[ ]=[ ](?<type>\S+).+
+      ^Physical[ ]Size[ ]=[ ](?<arch_size>\d+).+
+      ^\d{4}-\d{2}-\d{2}[ ]\d{2}:\d{2}:\d{2}\s+
+      (?<orig_size>\d+)\s+\d+\s+
+      (?<files>\d+)[ ]files?
+      /xms, output)
+    fix_common_match(match)
+  end
+
+  @doc false
+  def parse_list_output(output) do
+    if String.contains?(output, "Type = 7z\n") do
+      parse_list_output_7z(output)
+    else
+      parse_list_output_zip(output)
+    end
+  end
+
+  @doc false
   def compress_args(options) do
     case options do
       # 7zip LZMA compression
@@ -22,38 +66,14 @@ defmodule FileSmasher.SevenZip.Helpers do
   end
 
   @doc false
-  def fix_common_match(match) do
-    match = Map.update! match, "files", &(elem(Integer.parse(&1), 0))
-    match = Map.update! match, "o_bytes", &(elem(Integer.parse(&1), 0))
-    match = Map.update! match, "arch_bytes", &(elem(Integer.parse(&1), 0))
-    if match["o_bytes"] > 0 do
-      Map.put match, "ratio", Float.round(match["arch_bytes"] / match["o_bytes"], 3)
-    else
-      Map.put match, "ratio", 0
-    end
-  end
-
-  @doc false
-  def parse_list_output_zip(output) do
+  def parse_add_output(output) do
     match = Regex.named_captures(~r/
-      ^Type[ ]=[ ](?<type>\S+).+
-      ^Physical[ ]Size[ ]=[ ](?<arch_bytes>\d+).+
-      ^\d{4}-\d{2}-\d{2}[ ]\d{2}:\d{2}:\d{2}\s+
-      (?<o_bytes>\d+)\s+\d+\s+
-      (?<files>\d+)[ ]files?
+      ^Scanning[ ]the[ ]drive:\n.*
+      (?<files>\d+)[ ]files?,\s
+      (?<orig_size>\d+)[ ]bytes.+
+      ^Archive[ ]size:[ ](?<arch_size>\d+)[ ]bytes
       /xms, output)
     fix_common_match(match)
-  end
-
-  @doc false
-  def parse_list_output_7z(output) do
-    match = Regex.named_captures(~r/
-      ^Method[ ]=[ ](?<method>\S+)$.+
-      ^Solid[ ]=[ ](?<solid>[-+])$
-      /xms, output)
-    match = Map.update! match, "solid", &(&1 == "+")
-    match_zip = parse_list_output_zip(output)
-    Map.merge(match_zip, match)
   end
 
 end
