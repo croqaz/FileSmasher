@@ -1,7 +1,9 @@
 
 # FileSmasher
 
-A thin wrapper over `7z` and `tar` programs, on Linux or Mac.
+A thin wrapper over Linux & Mac's `tar` and Igor Pavlov's `7-zip`.
+
+This is alpha grade software, use at your own risk.
 
 ## Installation
 

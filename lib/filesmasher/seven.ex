@@ -18,7 +18,7 @@ defmodule FileSmasher.SevenZip do
   end
 
   @doc """
-  Compress a file, or folder.
+  Compress a file, or a folder.
 
   ##Methods:
 
@@ -34,17 +34,18 @@ defmodule FileSmasher.SevenZip do
   * {:zip, :ultra} - ZIP maximum possible compression (strength 9/9, using Deflate64)
   """
   @spec compress(String.t, String.t, tuple, list) :: map
-  def compress(arch, path, method \\ {:'7z'}, args \\ []) do
+  def compress(arch, path, method \\ {:'7z'}, args \\ "") do
     arch = Path.expand(arch)
     path = Path.expand(path)
+    meth = compress_args(method)
     IO.puts(~s(Compress "#{path}" into "#{arch}".))
     # Execute 7z add
-    { output, _ } = System.cmd("7z", ["a"] ++ compress_args(method) ++ args ++ [arch, path])
-    parse_add_output(output)
+    %Result{status: status} = Porcelain.shell "7z a #{meth} #{args} #{arch} #{path}"
+    if status == 0, do: :ok, else: %{error: "Cannot 7z compress!"}
   end
 
   @doc """
-  Extract archive into a path.
+  Extract a compatible 7-zip archive.
 
   ##Overwrite existing files: true, or false.
   """
@@ -56,7 +57,7 @@ defmodule FileSmasher.SevenZip do
     IO.puts(~s(Extracting "#{arch}".))
     # Execute 7z extract
     %Result{status: status} = Porcelain.shell "7z e #{over} #{arch} -o#{path}"
-    if status === 0, do: :ok, else: %{error: "Cannot extract!"}
+    if status === 0, do: :ok, else: %{error: "Cannot 7z extract!"}
   end
 
 end

@@ -51,29 +51,18 @@ defmodule FileSmasher.SevenZip.Helpers do
   def compress_args(options) do
     case options do
       # 7zip LZMA compression
-      {:'7z'} -> ["-m0=lzma"]
-      {:'7z', :min} ->   ~W/-m0=lzma -mx=1 -ms=off -mf=off/
-      {:'7z', :fast} ->  ~W/-m0=lzma -mx=3/
-      {:'7z', :max} ->   ~W/-m0=lzma2 -mx=7 -ms=on -mf=on/
-      {:'7z', :ultra} -> ~W/-m0=lzma2 -mx=9 -ms=on -mf=on/
+      {:'7z'} -> "-m0=lzma"
+      {:'7z', :min} ->   "-m0=lzma -mx=1 -ms=off -mf=off"
+      {:'7z', :fast} ->  "-m0=lzma -mx=3"
+      {:'7z', :max} ->   "-m0=lzma2 -mx=7 -ms=on -mf=on"
+      {:'7z', :ultra} -> "-m0=lzma2 -mx=9 -ms=on -mf=on"
       # ZIP Deflate compression
-      {:zip} -> ["-tzip"]
-      {:zip, :min} ->   ~W/-tzip -mx=1 -mm=Deflate/
-      {:zip, :fast} ->  ~W/-tzip -mx=3/
-      {:zip, :max} ->   ~W/-tzip -mx=7 -mm=Deflate64/
-      {:zip, :ultra} -> ~W/-tzip -mx=9 -mm=Deflate64/
+      {:zip} -> "-tzip"
+      {:zip, :min} ->   "-tzip -mx=1 -mm=Deflate"
+      {:zip, :fast} ->  "-tzip -mx=3"
+      {:zip, :max} ->   "-tzip -mx=7 -mm=Deflate64"
+      {:zip, :ultra} -> "-tzip -mx=9 -mm=Deflate64"
     end
-  end
-
-  @doc false
-  def parse_add_output(output) do
-    match = Regex.named_captures(~r/
-      ^Scanning[ ]the[ ]drive:\n.*
-      (?<files>\d+)[ ]files?,\s
-      (?<orig_size>\d+)[ ]bytes.+
-      ^Archive[ ]size:[ ](?<arch_size>\d+)[ ]bytes
-      /xms, output)
-    fix_common_match(match)
   end
 
 end

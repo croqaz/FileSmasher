@@ -39,38 +39,13 @@ defmodule FileSmasherSevenHelpersTest do
     assert m["arch_size"] == 7520721
   end
 
-  # --- ADD ---
-
-  test "parse adding a folder with 7z" do
-    o = "Scanning the drive:\n2 folders, 3 files, 7658009 bytes (7479 KiB)\n\nCreating archive: test/documents.7z\n\nItems to compress: 5\n\n\nFiles read from disk: 3\nArchive size: 7550926 bytes (7374 KiB)\nEverything is Ok\n"
-    m = parse_add_output o
-    assert m["files"] == 3
-    assert m["orig_size"] == 7658009
-    assert m["arch_size"] == 7550926
-  end
-
-  test "parse adding a file with 7z" do
-    o = "Scanning the drive:\n1 file, 518076 bytes (506 KiB)\n\nCreating archive: test/documents.7z\n\nItems to compress: 1\n\n\nFiles read from disk: 1\nArchive size: 511010 bytes (500 KiB)\nEverything is Ok\n"
-    m = parse_add_output o
+  test "parse info zip 1 file" do
+    o = "Scanning the drive for archives:\n1 file, 1115461 bytes (1090 KiB)\n\nListing archive: test.zip\n\n--\nPath = test.zip\nType = zip\nPhysical Size = 1115461\n\n   Date      Time    Attr         Size   Compressed  Name\n------------------- ----- ------------ ------------  ------------------------\n2016-09-07 15:53:25 .....      1129054      1115275  test/documents/photo-1.jpg\n------------------- ----- ------------ ------------  ------------------------\n2016-09-07 15:53:25            1129054      1115275  1 files\n"
+    m = parse_list_output o
+    assert m["type"] == "zip"
     assert m["files"] == 1
-    assert m["orig_size"] == 518076
-    assert m["arch_size"] == 511010
-  end
-
-  test "parse adding a folder with ZIP" do
-    o = "Scanning the drive:\n2 folders, 3 files, 7658009 bytes (7479 KiB)\n\nCreating archive: test/documents.zip\n\nItems to compress: 5\n\n\nFiles read from disk: 3\nArchive size: 7546665 bytes (7370 KiB)\nEverything is Ok\n"
-    m = parse_add_output o
-    assert m["files"] == 3
-    assert m["orig_size"] == 7658009
-    assert m["arch_size"] == 7546665
-  end
-
-  test "parse adding a file with ZIP" do
-    o = "Scanning the drive:\n1 file, 518076 bytes (506 KiB)\n\nCreating archive: test/documents.zip\n\nItems to compress: 1\n\n\nFiles read from disk: 1\nArchive size: 508193 bytes (497 KiB)\nEverything is Ok\n"
-    m = parse_add_output o
-    assert m["files"] == 1
-    assert m["orig_size"] == 518076
-    assert m["arch_size"] == 508193
+    assert m["orig_size"] == 1129054
+    assert m["arch_size"] == 1115461
   end
 
 end
