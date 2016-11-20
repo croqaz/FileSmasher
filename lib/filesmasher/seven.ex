@@ -33,7 +33,7 @@ defmodule FileSmasher.SevenZip do
   * {:zip, :max} - ZIP strong compression (strength 7/9, using Deflate64)
   * {:zip, :ultra} - ZIP maximum possible compression (strength 9/9, using Deflate64)
   """
-  @spec compress(String.t, String.t, tuple, list) :: map
+  @spec compress(String.t, String.t, tuple, list) :: atom | map
   def compress(arch, path, method \\ {:'7z'}, args \\ "") do
     arch = Path.expand(arch)
     path = Path.expand(path)
@@ -49,7 +49,7 @@ defmodule FileSmasher.SevenZip do
 
   ##Overwrite existing files: true, or false.
   """
-  @spec extract(String.t, String.t, boolean) :: map
+  @spec extract(String.t, String.t, boolean) :: atom | map
   def extract(arch, path, overwrite \\ false) do
     arch = Path.expand(arch)
     path = Path.expand(path)

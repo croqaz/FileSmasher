@@ -12,7 +12,7 @@ defmodule FileSmasher.Tar do
     if status == 0, do: parse_list_output(output), else: %{error: "Cannot get info!"}
   end
 
-  @spec compress(String.t, String.t, tuple) :: map
+  @spec compress(String.t, String.t, tuple) :: atom | map
   def compress(arch, path, method \\ {:gz}) do
     cmd = compress_args(method)
     # Execute tar create archive
@@ -20,7 +20,7 @@ defmodule FileSmasher.Tar do
     if status == 0, do: :ok, else: %{error: "Cannot tar compress!"}
   end
 
-  @spec extract(String.t, String.t, boolean) :: map
+  @spec extract(String.t, String.t, boolean) :: atom | map
   def extract(arch, path \\ "", overwrite \\ false) do
     over = if overwrite, do: "", else: "k"
     path = if String.length(path) > 0, do: "-C #{path}", else: ""
