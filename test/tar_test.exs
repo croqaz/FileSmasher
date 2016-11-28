@@ -1,33 +1,22 @@
 defmodule FileSmasherTarTest do
   use ExUnit.Case, async: false
   alias FileSmasher.Tar
-  defp path(), do: "test/documents"
+  import FileSmasherHelpers
 
   setup do
+    temp_path = create_temp_files
     on_exit fn ->
-      arch_tgz = "test/documents.tgz"
-      arch_tbz = "test/documents.tbz"
-      arch_txz = "test/documents.txz"
-      if File.regular?(arch_tgz) do
-        File.rm(arch_tgz)
-        IO.puts "Delete TGZ achive.."
-      end
-      if File.regular?(arch_tbz) do
-        File.rm(arch_tbz)
-        IO.puts "Delete TBZ achive.."
-      end
-      if File.regular?(arch_txz) do
-        File.rm(arch_txz)
-        IO.puts "Delete TXZ achive.."
-      end
-      :ok
+      # IO.puts "Cleanup: #{temp_path}"
+      File.rm_rf(temp_path)
     end
+    {:ok, [temp_path: temp_path]}
   end
 
-  test "compress test min" do
+  test "compress test min", %{temp_path: path} do
     Enum.map(
       [:gz, :bz, :xz], fn type ->
         IO.puts("\n= Compressing MIN #{type} =")
+        initial_files = ls_r(path)
         arch = path <> ".t#{type}"
         :ok = Tar.compress(arch, path, {type, :min})
         nfo = Tar.info(arch) |> IO.inspect
@@ -40,14 +29,17 @@ defmodule FileSmasherTarTest do
           nfo.type == "xz" ->
             assert nfo.ratio == 0.989
         end
+        File.rm_rf(path)
         :ok = Tar.extract(arch)
+        assert initial_files == ls_r(path)
     end)
   end
 
-  test "compress test normal" do
+  test "compress test normal", %{temp_path: path} do
     Enum.map(
       [:gz, :bz, :xz], fn type ->
         IO.puts("\n= Compressing normal #{type} =")
+        initial_files = ls_r(path)
         arch = path <> ".t#{type}"
         :ok = Tar.compress(arch, path, {type})
         nfo = Tar.info(arch) |> IO.inspect
@@ -60,14 +52,17 @@ defmodule FileSmasherTarTest do
           nfo.type == "xz" ->
             assert nfo.ratio == 0.986
         end
+        File.rm_rf(path)
         :ok = Tar.extract(arch)
+        assert initial_files == ls_r(path)
     end)
   end
 
-  test "compress test max" do
+  test "compress test max", %{temp_path: path} do
     Enum.map(
       [:gz, :bz, :xz], fn type ->
         IO.puts("\n= Compressing MAX #{type} =")
+        initial_files = ls_r(path)
         arch = path <> ".t#{type}"
         :ok = Tar.compress(arch, path, {type, :max})
         nfo = Tar.info(arch) |> IO.inspect
@@ -80,7 +75,9 @@ defmodule FileSmasherTarTest do
           nfo.type == "xz" ->
             assert nfo.ratio == 0.986
         end
+        File.rm_rf(path)
         :ok = Tar.extract(arch)
+        assert initial_files == ls_r(path)
     end)
   end
 

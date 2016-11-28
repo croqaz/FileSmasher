@@ -10,15 +10,10 @@ defmodule FileSmasher.Tar.Helpers do
     files = Regex.scan(~r|^\S+[ ]+\d+[ ]+\S+[ ]+\S+[ ]+[1-9]\d*[ ]+\S+|m, o) |> length
     sizes = Regex.scan(~r|^\S+[ ]+\d+[ ]+\S+[ ]+\S+[ ]+(\d+)[ ]+\S+|m, o, capture: :all_but_first)
     orig_size = Enum.map(sizes, fn(x) -> hd(x) |> Integer.parse |> elem(0) end) |> Enum.sum
-    arch_size = Regex.run(~r|^.+ st_size=(\d+) |, o, capture: :all_but_first)
-      |> hd |> Integer.parse |> elem(0)
-    ratio = if orig_size > 0, do: Float.round(arch_size / orig_size, 3), else: 1
     %{
       type: type,
       files: files,
-      arch_size: arch_size,
       orig_size: orig_size,
-      ratio: ratio
     }
   end
 

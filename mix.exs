@@ -17,7 +17,10 @@ defmodule FileSmasher.Mixfile do
   end
 
   defp deps do
-    [{:porcelain, "~> 2.0"}]
+    [
+      {:porcelain, "~> 2.0"},
+      {:temp, "~> 0.4", only: :test}
+    ]
   end
 
   defp package do

@@ -13,7 +13,7 @@ defmodule FileSmasher.SevenZip do
   def info(archive) do
     arch = Path.expand(archive)
     # Execute 7z list
-    %Result{out: output, status: status} = Porcelain.shell "7z l #{arch}"
+    %Result{out: output, status: status} = Porcelain.shell ~s(7z l "#{arch}")
     if status === 0, do: parse_list_output(output), else: %{error: "Cannot get info!"}
   end
 
@@ -40,7 +40,7 @@ defmodule FileSmasher.SevenZip do
     meth = compress_args(method)
     IO.puts(~s(Compress "#{path}" into "#{arch}".))
     # Execute 7z add
-    %Result{status: status} = Porcelain.shell "7z a #{meth} #{args} #{arch} #{path}"
+    %Result{status: status} = Porcelain.shell ~s(7z a #{meth} #{args} "#{arch}" "#{path}")
     if status == 0, do: :ok, else: %{error: "Cannot 7z compress!"}
   end
 
@@ -50,13 +50,14 @@ defmodule FileSmasher.SevenZip do
   ##Overwrite existing files: true, or false.
   """
   @spec extract(String.t, String.t, boolean) :: atom | map
-  def extract(arch, path, overwrite \\ false) do
+  def extract(arch, path \\ ".", overwrite \\ false) do
     arch = Path.expand(arch)
     path = Path.expand(path)
     over = if overwrite, do: ["-y"], else: ["-aos"]
+    path = if String.length(path) == 0 || path == ".", do: "", else: ~s(-o"#{path}")
     IO.puts(~s(Extracting "#{arch}".))
     # Execute 7z extract
-    %Result{status: status} = Porcelain.shell "7z e #{over} #{arch} -o#{path}"
+    %Result{status: status} = Porcelain.shell ~s(7z x #{over} "#{arch}" #{path})
     if status === 0, do: :ok, else: %{error: "Cannot 7z extract!"}
   end
 
