@@ -50,7 +50,7 @@ defmodule FileSmasher.SevenZip do
   ##Overwrite existing files: true, or false.
   """
   @spec extract(String.t, String.t, boolean) :: atom | map
-  def extract(arch, path \\ ".", overwrite \\ false) do
+  def extract(arch, path \\ "", overwrite \\ false) do
     arch = Path.expand(arch)
     path = Path.expand(path)
     over = if overwrite, do: ["-y"], else: ["-aos"]

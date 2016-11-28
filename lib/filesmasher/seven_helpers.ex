@@ -52,12 +52,14 @@ defmodule FileSmasher.SevenZip.Helpers do
     case options do
       # 7zip LZMA compression
       {:'7z'} -> "-m0=lzma"
+      {:'7z', :default} -> "-m0=lzma"
       {:'7z', :min} ->   "-m0=lzma -mx=1 -ms=off -mf=off"
       {:'7z', :fast} ->  "-m0=lzma -mx=3"
       {:'7z', :max} ->   "-m0=lzma2 -mx=7 -ms=on -mf=on"
       {:'7z', :ultra} -> "-m0=lzma2 -mx=9 -ms=on -mf=on"
       # ZIP Deflate compression
       {:zip} -> "-tzip"
+      {:zip, :default} -> "-tzip"
       {:zip, :min} ->   "-tzip -mx=1 -mm=Deflate"
       {:zip, :fast} ->  "-tzip -mx=3"
       {:zip, :max} ->   "-tzip -mx=7 -mm=Deflate64"

@@ -12,54 +12,36 @@ defmodule FileSmasherSevenTest do
     {:ok, [temp_path: temp_path]}
   end
 
-  test "compress folder with 7z min", %{temp_path: path} do
-    initial_files = ls_r(path)
-    arch = path <> ".7z"
-    :ok = SevenZip.compress(arch, path, {:'7z', :min})
-    nfo = SevenZip.info(arch) |> IO.inspect
-    assert nfo["files"] == 3
-    assert nfo["type"] == "7z"
-    assert nfo["solid"] == false
-    File.rm_rf(path)
-    :ok = SevenZip.extract(arch, ".")
-    assert initial_files == ls_r(path)
+  @spec template(atom, charlist) :: any
+  def template(level, path) do
+    Enum.map(
+      [:'7z', :zip], fn type ->
+        IO.puts("\n= Compressing #{level} #{type} =")
+        initial_files = ls_r(path)
+        ext = type |> to_string
+        arch = path <> "." <> ext
+        :ok = SevenZip.compress(arch, path, {type, level})
+        nfo = SevenZip.info(arch) |> IO.inspect
+        assert nfo["files"] == 3
+        assert nfo["type"] == ext
+        assert nfo["ratio"] > 0.98 && nfo["ratio"] < 1
+        if type == :'7z' && level != :min, do: assert nfo["solid"] == true
+        File.rm_rf(path)
+        :ok = SevenZip.extract(arch, ".")
+        assert initial_files == ls_r(path)
+    end)
   end
 
-  test "compress folder with 7z ultra", %{temp_path: path} do
-    initial_files = ls_r(path)
-    arch = path <> ".7z"
-    :ok = SevenZip.compress(arch, path, {:'7z', :ultra})
-    nfo = SevenZip.info(arch) |> IO.inspect
-    assert nfo["files"] == 3
-    assert nfo["type"] == "7z"
-    assert nfo["solid"] == true
-    File.rm_rf(path)
-    :ok = SevenZip.extract(arch, ".")
-    assert initial_files == ls_r(path)
+  test "compress test min", %{temp_path: path} do
+    template(:min, path)
   end
 
-  test "compress folder with zip min", %{temp_path: path} do
-    initial_files = ls_r(path)
-    arch = path <> ".zip"
-    :ok = SevenZip.compress(arch, path, {:zip, :min})
-    nfo = SevenZip.info(arch) |> IO.inspect
-    assert nfo["files"] == 3
-    assert nfo["type"] == "zip"
-    File.rm_rf(path)
-    :ok = SevenZip.extract(arch, ".")
-    assert initial_files == ls_r(path)
+  test "compress test default", %{temp_path: path} do
+    template(:default, path)
   end
 
-  test "compress folder with zip ultra", %{temp_path: path} do
-    initial_files = ls_r(path)
-    arch = path <> ".zip"
-    :ok = SevenZip.compress(arch, path, {:zip, :ultra})
-    nfo = SevenZip.info(arch) |> IO.inspect
-    assert nfo["files"] == 3
-    assert nfo["type"] == "zip"
-    File.rm_rf(path)
-    :ok = SevenZip.extract(arch, ".")
-    assert initial_files == ls_r(path)
+  test "compress test max", %{temp_path: path} do
+    template(:max, path)
   end
 
   test "listing invalid archive should fail", %{temp_path: path} do
