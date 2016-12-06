@@ -56,11 +56,11 @@ defmodule FileSmasherSevenTest do
     assert is_binary(e) == true
   end
 
-  # test "extract in invalid path should fail" do
-  #   path = "/"
-  #   arch = System.cwd <> "/test/documents.zip"
-  #   %{error: e} = SevenZip.extract(arch, path)
-  #   assert is_binary(e) == true
+  # test "extract in invalid path should fail", %{temp_path: path} do
+  #   arch = path <> ".zip"
+  #   :ok = SevenZip.compress(arch, path, {:zip, :min})
+  #   %{error: err} = SevenZip.extract(arch, "/x/y/z")
+  #   assert is_binary(err) == true
   # end
 
 end

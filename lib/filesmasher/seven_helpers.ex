@@ -1,6 +1,57 @@
 defmodule FileSmasher.SevenZip.Helpers do
   @moduledoc """
   Helper module for parsing command line output.
+
+  Example output for 7zip ::
+
+  7-Zip [64] 9.20  Copyright (c) 1999-2010 Igor Pavlov  2010-11-18
+
+  Listing archive: test/doc.7z
+
+  --
+  Path = test/doc.7z
+  Type = 7z
+  Method = LZMA
+  Solid = +
+  Blocks = 1
+  Physical Size = 7557693
+  Headers Size = 279
+
+    Date      Time    Attr         Size   Compressed  Name
+  ------------------- ----- ------------ ------------  ------------------------
+  2016-11-27 21:54:27 D....            0            0  documents
+  2016-09-07 12:53:25 ....A      6010879      7557414  documents/Comfort_Fit - Sorry.mp3
+  2016-09-07 12:53:25 ....A       518076               documents/Elixir-Lang.pdf
+  2016-09-07 12:53:25 ....A      1129054               documents/photo-1.jpg
+  ------------------- ----- ------------ ------------  ------------------------
+    7658009      7557414  3 files, 1 folders
+
+  Another example for 7zip ::
+
+  7-Zip [64] 16.02 : Copyright (c) 1999-2016 Igor Pavlov : 2016-05-21
+
+  Scanning the drive for archives:
+  1 file, 7557693 bytes (7381 KiB)
+
+  Listing archive: test/doc.7z
+
+  --
+  Path = test/doc.7z
+  Type = 7z
+  Physical Size = 7557693
+  Headers Size = 279
+  Method = LZMA:23
+  Solid = +
+  Blocks = 1
+
+    Date      Time    Attr         Size   Compressed  Name
+  ------------------- ----- ------------ ------------  ------------------------
+  2016-11-27 23:54:27 D....            0            0  documents
+  2016-09-07 14:53:25 ....A      6010879      7557414  documents/Comfort_Fit - Sorry.mp3
+  2016-09-07 14:53:25 ....A       518076               documents/Elixir-Lang.pdf
+  2016-09-07 14:53:25 ....A      1129054               documents/photo-1.jpg
+  ------------------- ----- ------------ ------------  ------------------------
+  2016-11-27 23:54:27            7658009      7557414  3 files, 1 folders
   """
 
   @doc false
@@ -31,7 +82,7 @@ defmodule FileSmasher.SevenZip.Helpers do
     match = Regex.named_captures(~r/
       ^Type[ ]=[ ](?<type>\S+).+
       ^Physical[ ]Size[ ]=[ ](?<arch_size>\d+).+
-      ^\d{4}-\d{2}-\d{2}[ ]\d{2}:\d{2}:\d{2}\s+
+      ------------------------\n.+?
       (?<orig_size>\d+)\s+\d+\s+
       (?<files>\d+)[ ]files?
       /xms, output)

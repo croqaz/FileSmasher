@@ -54,8 +54,8 @@ defmodule FileSmasher.SevenZip do
     arch = Path.expand(arch)
     path = Path.expand(path)
     over = if overwrite, do: ["-y"], else: ["-aos"]
+    IO.puts(~s(Extracting "#{arch}" into "#{path}".))
     path = if String.length(path) == 0 || path == ".", do: "", else: ~s(-o"#{path}")
-    IO.puts(~s(Extracting "#{arch}".))
     # Execute 7z extract
     %Result{status: status} = Porcelain.shell ~s(7z x #{over} "#{arch}" #{path})
     if status === 0, do: :ok, else: %{error: "Cannot 7z extract!"}

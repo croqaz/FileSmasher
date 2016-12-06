@@ -10,10 +10,11 @@ defmodule FileSmasher.Tar do
     # Execute tar list
     %Result{out: output, status: status} = Porcelain.shell ~s(file "#{archive}" ; tar tfv "#{archive}")
     if status == 0 do
-      {ver, 0} = System.cmd "tar", ["--version"]
+      {ver, _} = System.cmd "tar", ["--version"]
       cond do
-        String.starts_with?(ver, "bsdtar") -> parse_list_output(:bsd, archive, output)
+        String.contains?(ver, "bsdtar") -> parse_list_output(:bsd, archive, output)
         String.contains?(ver, "(GNU tar)") -> parse_list_output(:gnu, archive, output)
+        "" -> parse_list_output(:gnu, archive, output) # BusyBox tar
       end
     else
       %{error: "Cannot get info!"}
